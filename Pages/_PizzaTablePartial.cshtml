@@ -1,0 +1,36 @@
+@model List<RazorPagesPizza.Models.Pizza>
+
+<table class="table mt-5">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Price</th>
+            <th scope="col">Size</th>
+            <th scope="col">Flavor</th>
+            <th scope="col">Gluten Free</th>
+            <th scope="col">Delete</th>
+            <th scope="col">Edit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pizza in Model)
+        {
+            <tr>
+                <td>@pizza.Name</td>
+                <td>@($"{pizza.Price:C}")</td>
+                <td>@pizza.Size</td>
+                <td>@pizza.Flavor</td>
+                <td>@(pizza.IsGlutenFree ? "Gluten Free" : "Not Gluten Free")</td>
+                <td>
+                    <button type="button" class="btn btn-danger" onclick="deletePizza(@pizza.Id)">Delete</button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning" 
+                        onclick="editPizza('@pizza.Id', '@pizza.Name', @((int)pizza.Size), @((int)pizza.Flavor), '@pizza.Price', '@pizza.IsGlutenFree')">
+                        Edit
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

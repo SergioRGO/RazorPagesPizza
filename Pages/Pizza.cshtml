@@ -1,0 +1,100 @@
+﻿@page
+@using RazorPagesPizza.Models
+@model RazorPagesPizza.Pages.PizzaModel
+
+<h1>Pizza List 🍕</h1>
+<form id="pizzaForm" method="post" class="card p-3">
+    <div class="row">
+        <div asp-validation-summary="All"></div>
+    </div>
+    <input id="NewPizza_Id"type="hidden" name=NewPizza.Id value="0">
+    <div class="form-group mb-0 align-middle">
+        
+        <label asp-for="NewPizza.Name">Name</label>
+        <input type="text" id="NewPizza_Name"asp-for="NewPizza.Name" class="mr-5">
+        <label asp-for="NewPizza.Size">Size</label>
+        <select asp-for="NewPizza.Size" id="NewPizza_Size" asp-items="Html.GetEnumSelectList<PizzaSize>()" class="mr-5"></select>
+        <label asp-for="NewPizza.Flavor">Flavor</label>
+        <select asp-for="NewPizza.Flavor" asp-items="Html.GetEnumSelectList<PizzaFlavor>()" id="NewPizza_Flavor" class="mr-5"></select>
+        <label asp-for="NewPizza.Price"></label>
+        <input asp-for="NewPizza.Price" id="NewPizza_Price" class="mr-5" />
+        <label asp-for="NewPizza.IsGlutenFree">Gluten Free</label>
+        <input type="checkbox" id="NewPizza_IsGlutenFree" asp-for="NewPizza.IsGlutenFree" class="mr-5">
+        <button type="submit" class="btn btn-primary" id="updateButton">Add</button>
+    </div>
+    <div id="partialContainer">
+        <partial name="_PizzaTablePartial" model="Model.pizzas" />
+    </div> 
+</form>
+
+
+@section Scripts {
+    <script>
+        document.getElementById("updateButton").addEventListener("click", function (event) {
+            event.preventDefault();
+
+            document.getElementById('updateButton').innerText = 'Add';
+            updateButton.classList.remove("btn-warning");
+            updateButton.classList.add("btn-primary");
+
+            var form = document.getElementById("pizzaForm");
+            var formData = new FormData(form);
+
+            fetch("/Pizza?handler=AddPizza", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            })
+            .then(html => {
+                document.getElementById('partialContainer').innerHTML = html;
+                form.reset();
+                document.getElementById('NewPizza_Id').value ='0';
+            })
+            .catch(error => {
+                console.error("There's a problem", error);
+            });
+        });
+
+        function editPizza(id,name, size, flavor, price, isGlutenFree) {
+            document.getElementById('NewPizza_Id').value = id;
+            document.getElementById('NewPizza_Name').value = name;
+            document.getElementById('NewPizza_Size').value = size;
+            document.getElementById('NewPizza_Flavor').value = flavor;
+            document.getElementById('NewPizza_Price').value = price;
+            document.getElementById('NewPizza_IsGlutenFree').checked = isGlutenFree==="True";
+
+            document.getElementById('updateButton').innerText = 'Edit';
+            updateButton.classList.remove("btn-danger");
+            updateButton.classList.add("btn-warning");
+        }
+        function deletePizza(id) {
+            fetch(`/Pizza?handler=Delete&id=${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            })
+            .then(html => {
+                document.getElementById('partialContainer').innerHTML = html;
+            })
+            .catch(error => {
+                console.error("There's a problem", error);
+            });
+        }
+    </script>
+}
